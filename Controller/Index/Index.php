@@ -24,6 +24,9 @@ class Index extends \BlueOcean\BlueOceanPay\Controller\Index
             }
             // 交易额
             $transaction_amount = $_order->getBaseGrandTotal() * 100;
+        } else {
+            echo 'Order Error!';
+            exit;
         }
 
         $merchant_id = $this->getHelper()->getConfigData('merchant_id');
@@ -49,10 +52,9 @@ class Index extends \BlueOcean\BlueOceanPay\Controller\Index
             'notify_url'        => $notify_url
         );
 
-        $requestData['sign'] = $this->getUtilities()->sign($requestData, $public_key);
-
-        $result = $this->getUtilities()->httpPost($url, json_encode($requestData));
-        $returnData = json_decode($result, true);
+        $requestData['sign']    = $this->getUtilities()->sign($requestData, $public_key);
+        $result                 = $this->getUtilities()->httpPost($url, json_encode($requestData));
+        $returnData             = json_decode($result, true);
 
         if($returnData['code'] != 200){
             if ($returnData['data'] != '') {
@@ -78,25 +80,7 @@ class Index extends \BlueOcean\BlueOceanPay\Controller\Index
                     function showQRCode(){showOverlay(),adjust("#qr-area")}
                     function showOverlay(){$("#overlay").height(pageHeight()),$("#overlay").width(pageWidth()),$("#overlay").show()}function pageHeight(){return Math.max(document.documentElement.scrollHeight,document.body.scrollHeight)}function pageWidth(){return Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)}function adjust(a){var e,b=$(a).width(),c=$(a).height(),d=scrollY()+windowHeight()/2-c/2;0>d&&(d=0),e=scrollX()+windowWidth()/2-b/2,0>e&&(e=0),$(a).css({left:e+"px",top:d+"px",visibility:"visible"})}function windowHeight(){var a=document.documentElement;return Math.max(self.innerHeight,a&&a.clientHeight,document.body.clientHeight)}function windowWidth(){var a=document.documentElement;return Math.max(self.innerWidth,a&&a.clientWidth,document.body.clientWidth)}function scrollY(){var a=document.documentElement;return self.pageYOffset||a&&a.scrollTop||document.body.scrollTop}function scrollX(){var a=document.documentElement;return self.pageXOffset||a&&a.scrollLeft||document.body.scrollLeft}
                     var url="'.$code_url.'",qrcode=new QRCode("qrcode",{text:url,width:256,height:256,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});window.onresize=function(){showOverlay(),adjust("#qr-area")}
-                    function chekOrderStatus() {
-                    var loop=true;
-                    $.ajax({
-                      url: "'.$check_url.'?order_id='.$order_id.'",
-                      dataType: "json",
-                      success: function(response) {
-                        if (response) {
-                          loop = false;
-                          location.href = "'.$success_url.'";
-                        }
-                        if (loop) {
-                          setTimeout("chekOrderStatus()", 1000);
-                        }
-                      },
-                      error: function(xhr, ajaxOptions, thrownError) {
-                        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-                      }
-                    });
-                  }
+                    function chekOrderStatus() { var loop=true; $.ajax({ url: "'.$check_url.'?order_id='.$order_id.'", dataType: "json", success: function(response) { if (response) { loop = false; location.href = "'.$success_url.'"; } if (loop) { setTimeout("chekOrderStatus()", 1000); } }, error: function(xhr, ajaxOptions, thrownError) { alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText); } }); }
                     onload=function(){showQRCode(),chekOrderStatus()};
                     </script>
                     ';
