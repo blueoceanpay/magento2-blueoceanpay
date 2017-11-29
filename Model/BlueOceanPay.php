@@ -2,8 +2,6 @@
 
 namespace BlueOcean\BlueOceanPay\Model;
 
-use Magento\Framework\Controller\ResultFactory;
-
 /**
  * Pay In Store payment method model
  */

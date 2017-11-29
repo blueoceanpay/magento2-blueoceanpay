@@ -3,7 +3,6 @@
 namespace BlueOcean\BlueOceanPay\Controller;
 
 use Magento\Store\Model\StoreManager;
-use Magento\Framework\Controller\ResultFactory;
 
 abstract class Index extends \Magento\Framework\App\Action\Action
 {

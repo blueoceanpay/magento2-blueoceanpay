@@ -6,7 +6,6 @@ class Validator extends \Magento\Framework\App\Helper\AbstractHelper
 {
 
     /**
-     * Función que valida la notificación de Redsys comparándola con los datos locales
      *
      * @param  type $values
      * @return boolean | array

@@ -53,7 +53,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getConfigData($field, $storeId = null)
     {
         $path = 'payment/blueoceanpay/' . $field;
-        //echo $path;exit;
         return $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE, $storeId);
     }
 }
