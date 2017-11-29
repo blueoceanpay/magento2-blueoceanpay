@@ -1,0 +1,331 @@
+<?php
+
+namespace BlueOcean\BlueOceanPay\Helper;
+
+class Utilities extends \Magento\Framework\App\Helper\AbstractHelper
+{
+    
+    private $vars_pay = null;
+    
+    private $ri = null;
+    
+    public function __construct(
+        \Magento\Framework\App\Helper\Context $context,
+        \Magento\Framework\Locale\ResolverInterface $ri
+    ) {
+        $this->ri = $ri;
+        parent::__construct($context);
+    }
+
+    public function setParameter($key, $value)
+    {
+        $this->vars_pay[$key] = $value;
+    }
+
+    public function getParameter($key)
+    {
+        return $this->vars_pay[$key];
+    }
+    
+    public function getParameters()
+    {
+        return $this->vars_pay;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////					FUNCIONES AUXILIARES:							  ////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Encrypt 3DES
+     *
+     * @param  type $message
+     * @param  type $key
+     * @return type
+     */
+    private function encrypt3DES($message, $key)
+    {
+        // Se establece un IV por defecto
+        $bytes = [0, 0, 0, 0, 0, 0, 0, 0];
+        $iv = implode(array_map("chr", $bytes));
+        // Se cifra
+        $ciphertext = mcrypt_encrypt(MCRYPT_3DES, $key, $message, MCRYPT_MODE_CBC, $iv);
+        return $ciphertext;
+    }
+
+    private function base64UrlEncode($input)
+    {
+        return strtr(base64_encode($input), '+/', '-_');
+    }
+
+    private function encodeBase64($data)
+    {
+        $data = base64_encode($data);
+        return $data;
+    }
+
+    private function base64UrlDecode($input)
+    {
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
+
+    private function decodeBase64($data)
+    {
+        $data = base64_decode($data);
+        return $data;
+    }
+
+    private function mac256($ent, $key)
+    {
+        $res = hash_hmac('sha256', $ent, $key, true);
+        return $res;
+    }
+
+    public function generateIdLog()
+    {
+        $vars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $stringLength = strlen($vars);
+        $result = '';
+        for ($i = 0; $i < 20; $i++) {
+            $result .= $vars[rand(0, $stringLength - 1)];
+        }
+        return $result;
+    }
+
+    public function getVersionClave()
+    {
+        return "HMAC_SHA256_V1";
+    }
+
+    public function getIdiomaTpv()
+    {
+        $idioma_tpv = '001';
+        $idioma_web = $this->ri->getLocale();
+        $idiomas_tpv = [
+            'es' => '001',
+            'en' => '002',
+            'ca' => '003',
+            'fr' => '004',
+            'de' => '005',
+            'nl' => '006',
+            'it' => '007',
+            'sv' => '008',
+            'pt' => '009',
+            'pl' => '011',
+            'gl' => '012',
+            'eu' => '013'
+        ];
+        $idioma_tpv = '001';
+        if (isset($idiomas_tpv[$idioma_web])) {
+            $idioma_tpv = $idiomas_tpv[$idioma_web];
+        }
+        return $idioma_tpv;
+    }
+
+    public function getMonedaTpv($moneda)
+    {
+        if ($moneda == "0") {
+            $moneda = "978";
+        } elseif ($moneda == "1") {
+            $moneda = "840";
+        } elseif ($moneda == "2") {
+            $moneda = "826";
+        } else {
+            $moneda = "978";
+        }
+        return $moneda;
+    }
+
+    public function getTipoPagoTpv($tipopago)
+    {
+        if ($tipopago == "0") {
+            $tipopago = " ";
+        } elseif ($tipopago == "1") {
+            $tipopago = "C";
+        } else {
+            $tipopago = "T";
+        }
+        return $tipopago;
+    }
+
+    public function getEntornoTpv($entorno)
+    {
+        $action_entorno = '';
+        if ($entorno == "1") {
+            $action_entorno = "http://sis-d.redsys.es/sis/realizarPago/utf-8";
+        } elseif ($entorno == "2") {
+            $action_entorno = "https://sis-i.redsys.es:25443/sis/realizarPago/utf-8";
+        } elseif ($entorno == "3") {
+            $action_entorno = "https://sis-t.redsys.es:25443/sis/realizarPago/utf-8";
+        } else {
+            $action_entorno = "https://sis.redsys.es/sis/realizarPago/utf-8";
+        }
+        return $action_entorno;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////	   FUNCIONES PARA LA GENERACIÓN DEL FORMULARIO DE PAGO:			  ////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Función que nos da el número de pedido
+     *
+     * @return type
+     */
+    public function getOrder()
+    {
+        $num_pedido = "";
+        if (empty($this->vars_pay['DS_MERCHANT_ORDER'])) {
+            $num_pedido = $this->vars_pay['Ds_Merchant_Order'];
+        } else {
+            $num_pedido = $this->vars_pay['DS_MERCHANT_ORDER'];
+        }
+        return $num_pedido;
+    }
+
+    public function arrayToJson()
+    {
+        $json = json_encode($this->vars_pay);
+        return $json;
+    }
+
+    public function createMerchantParameters()
+    {
+        // Se transforma el array de datos en un objeto Json
+        $json = $this->arrayToJson();
+        // Se codifican los datos Base64
+        return $this->encodeBase64($json);
+    }
+
+    public function createMerchantSignature($key)
+    {
+        $res = '';
+        if(strlen($key) === 32) {
+            // Se decodifica la clave Base64
+            $key = $this->decodeBase64($key);
+            // Se genera el parámetro Ds_MerchantParameters
+            $ent = $this->createMerchantParameters();
+            // Se diversifica la clave con el Número de Pedido
+            $key = $this->encrypt3DES($this->getOrder(), $key);
+            // MAC256 del parámetro Ds_MerchantParameters
+            $res = $this->mac256($ent, $key);
+        }
+        // Se codifican los datos Base64
+        return $this->encodeBase64($res);
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////// FUNCIONES PARA LA RECEPCIÓN DE DATOS DE PAGO (Notif, URLOK y URLKO): ////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    public function getOrderNotif()
+    {
+        $num_pedido = "";
+        if (empty($this->vars_pay['Ds_Order'])) {
+            $num_pedido = $this->vars_pay['DS_ORDER'];
+        } else {
+            $num_pedido = $this->vars_pay['Ds_Order'];
+        }
+        return $num_pedido;
+    }
+
+    public function stringToArray($datosDecod)
+    {
+        $this->vars_pay = json_decode($datosDecod, true);
+    }
+
+    public function decodeMerchantParameters($datos)
+    {
+        // Se decodifican los datos Base64
+        $decodec = $this->base64UrlDecode($datos);
+        return $decodec;
+    }
+
+    public function createMerchantSignatureNotif($key, $datos)
+    {
+        $res = '';
+        if(strlen($key) === 32) {
+            // Se decodifica la clave Base64
+            $key = $this->decodeBase64($key);
+            // Se decodifican los datos Base64
+            $decodec = $this->base64UrlDecode($datos);
+            // Los datos decodificados se pasan al array de datos
+            $this->stringToArray($decodec);
+            // Se diversifica la clave con el Número de Pedido
+            $key = $this->encrypt3DES($this->getOrderNotif(), $key);
+            // MAC256 del parámetro Ds_Parameters que envía Redsys
+            $res = $this->mac256($datos, $key);
+        }
+        // Se codifican los datos Base64
+        return $this->base64UrlEncode($res);
+    }
+
+    /**
+     * 以post方式提交请求
+     * @param string $url
+     * @param array|string $data
+     * @return bool|mixed
+     */
+    public function httpPost($url, $data)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_POST, true);
+        if (is_array($data)) {
+            foreach ($data as &$value) {
+                if (is_string($value) && stripos($value, '@') === 0 && class_exists('CURLFile', false)) {
+                    $value = new CURLFile(realpath(trim($value, '@')));
+                }
+            }
+        }
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        if ($data) {
+            return $data;
+        }
+        return false;
+    }
+
+    /**
+     * 数组数据签名
+     * @param array $data 参数
+     * @param string $key 密钥
+     * @return string 签名
+     */
+    public function sign($data, $key) {
+        if (isset($data['sign'])) unset($data['sign']);
+        ksort($data);
+        $uri = http_build_query($data);
+        $uri = $uri . '&key=' . $key;
+        return strtoupper(md5($uri));
+    }
+
+    /**
+     * 生成随机字符串
+     * @param $length
+     * @return null|string
+     */
+    public function getRandChar($length) {
+        $str = null;
+        $strPol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+        $max = strlen($strPol) - 1;
+
+        for ($i = 0; $i < $length; $i++) {
+            $str .= $strPol[rand(0, $max)];
+        }
+        return $str;
+    }
+
+
+}

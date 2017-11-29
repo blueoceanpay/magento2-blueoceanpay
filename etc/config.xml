@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <blueoceanpay>
+                <model>BlueOcean\BlueOceanPay\Model\BlueOceanPay</model>
+                <debug>1</debug>
+                <active>0</active>
+                <order_status>payment_review</order_status>
+                <title>BlueOceanPay</title>
+                <payment_action>authorize</payment_action>
+                <currency>HKD</currency>
+            </blueoceanpay>
+        </payment>
+    </default>
+</config>
