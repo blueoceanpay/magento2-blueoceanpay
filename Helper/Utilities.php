@@ -16,7 +16,6 @@ class Utilities extends \Magento\Framework\App\Helper\AbstractHelper
         return $result;
     }
 
-
     /**
      * 以post方式提交请求
      * @param string $url
