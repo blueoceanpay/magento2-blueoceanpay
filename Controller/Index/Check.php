@@ -9,7 +9,7 @@ class Check extends \BlueOcean\BlueOceanPay\Controller\Index
     public function execute()
     {
         $request = $this->getRequest()->getParams();
-        if ($this->getOrderStatus($request['order_id']) == 'pending') {
+        if ($this->getOrderStatus($request['order_id']) == 'processing') {
             echo true;
         } else {
             echo false;
