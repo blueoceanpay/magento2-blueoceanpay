@@ -4,20 +4,20 @@ Developer: BlueOcean
 Website: http://www.blueoceanpay.com
 Contact: <mailto:andy@blueoceanpay.com>
 
+## Installation
 
-## Installation Disable Newsletter
-
-### Manual Installation
+### 1.Manual Installation
 
  * Download the extension
  * Unzip the file
  * Create a folder {Magento root}/app/code/BlueOcean/BlueOceanPay
  * Copy the content from the unzip folder
 
-### Using Composer
+### 2.Using Composer
 
 ```
 composer require blueoceanpay/magento2-blueoceanpay
+
 ```
 
 ## Enable extension
@@ -43,12 +43,7 @@ php bin/magento setup:static-content:deploy
 ### For store administrators
 
  - Configurable payment method name.
- - Allow to use test and production enviroments.
- - Detailed debug mode for integration and issue resolution.
  - Fully configurable with a lot of options.
 
-### BlueOceanPay's payment gateway main features
-
- - Simplicity, since no software installation in the merchant is required.
 
  
