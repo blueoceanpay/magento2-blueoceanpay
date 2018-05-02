@@ -47,3 +47,20 @@ php bin/magento setup:static-content:deploy
 
 
  
+## Demo
+
+### 後台
+
+http://magento.rightyoo.net/admin/
+
+user: admin
+
+pass: 123456a
+
+### 前台
+
+http://magento.rightyoo.net/
+
+user: demo@blueoceanpay.com
+
+pass: 123456

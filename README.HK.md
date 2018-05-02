@@ -42,5 +42,22 @@ php bin/magento setup:static-content:deploy
  - 可配置的其它多種選項.
 
 
+## Demo
+
+### 後台
+
+http://magento.rightyoo.net/admin/
+
+user: admin
+
+pass: 123456a
+
+### 前台
+
+http://magento.rightyoo.net/
+
+user: demo@blueoceanpay.com
+
+pass: 123456
 
  
