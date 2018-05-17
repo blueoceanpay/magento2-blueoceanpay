@@ -39,31 +39,25 @@ class Index extends \BlueOcean\BlueOceanPay\Controller\Index
 
 
         // 支付接口
-        $url = 'http://api.hk.blueoceanpay.com/wechat/order/create';
+        $url = 'http://api.hk.blueoceanpay.com/payment/pay';
         // 支付订单数据
         $requestData = array(
-            'appid'             => $merchant_id,
-            'nonce_str'         => $this->getUtilities()->getRandChar(10),
-            'trade_type'        => 'NATIVE',
-            'body'              => $productos,
-            'out_trade_no'      => date('YmdHis', time()) . '-'. $order_id,
-            'total_fee'         => $transaction_amount,
-            'spbill_create_ip'  => $_SERVER['REMOTE_ADDR'],
-            'notify_url'        => $notify_url
+            'appid'            => $merchant_id,
+            'payment'          => 'blueocean.qrcode',
+            'body'             => $productos,
+            'out_trade_no'     => date('YmdHis', time()) . '-' . $order_id,
+            'total_fee'        => $transaction_amount,
+            'notify_url'       => $notify_url
         );
 
-        $requestData['sign']    = $this->getUtilities()->sign($requestData, $public_key);
-        $result                 = $this->getUtilities()->httpPost($url, json_encode($requestData));
-        $returnData             = json_decode($result, true);
+        $requestData['sign'] = $this->getUtilities()->sign($requestData, $public_key);
+        $result              = $this->getUtilities()->httpPost($url, json_encode($requestData));
+        $returnData          = json_decode($result, true);
 
-        if($returnData['code'] != 200){
-            if ($returnData['data'] != '') {
-                $html = $returnData['message'] . ': ' . $returnData['data'];
-            } else {
-                $html = $returnData['message'];
-            }
+        if ($returnData['code'] != 200) {
+            $html = $returnData['code'] . ': ' . $returnData['message'];
         } else {
-            $code_url = $returnData['data']['code_url'];
+            $code_url = $returnData['data']['qrcode'];
 
             // 生成支付二维码
             $html = '         
